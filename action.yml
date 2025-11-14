@@ -1,0 +1,53 @@
+name: "Deploy a directory with rsync"
+description: "Sets up deployment directory via SSH and deploys files using rsync"
+author: "Jonas Ehrlich"
+
+inputs:
+  remote_host:
+    description: "Host for deployment"
+    required: true
+  remote_user:
+    description: "User for deployment"
+    required: true
+  remote_key:
+    description: "Private key for deployment"
+    required: true
+  remote_path:
+    description: "Directory to deploy to on the remote server"
+    required: true
+  path:
+    description: "Local source directory to deploy"
+    required: true
+  rsync_switches:
+    description: "Rsync command switches"
+    required: false
+    default: "--verbose --archive --compress --recursive --delete"
+  rsync_add_switches:
+    description: "Additional rsync command switches"
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup remote directory
+      uses: appleboy/ssh-action@v1
+      with:
+        host: ${{ inputs.remote_host }}
+        username: ${{ inputs.remote_user }}
+        key: ${{ inputs.remote_key }}
+        script: mkdir -p ${{ inputs.remote_path }}
+
+    - name: Deploy via rsync
+      uses: burnett01/rsync-deployments@7.1.0
+      with:
+        switches: ${{ inputs.rsync_switches }} ${{ inputs.rsync_add_switches }}
+        path: ${{ inputs.path }}
+        remote_path: ${{ inputs.remote_path }}
+        remote_host: ${{ inputs.remote_host }}
+        remote_user: ${{ inputs.remote_user }}
+        remote_key: ${{ inputs.remote_key }}
+
+branding:
+  icon: "upload-cloud"
+  color: "blue"
