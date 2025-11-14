@@ -16,15 +16,15 @@ step.
 
 ## Inputs
 
-| Input                | Description                                 | Required | Default                                               |
-| -------------------- | ------------------------------------------- | -------- | ----------------------------------------------------- |
-| `remote_host`        | Host for deployment                         | Yes      |                                                       |
-| `remote_user`        | User for deployment                         | Yes      |                                                       |
-| `remote_key`         | Private key for deployment                  | Yes      |                                                       |
-| `remote_path`        | Directory to deploy to on the remote server | Yes      |                                                       |
-| `path`               | Local source directory to deploy            | Yes      |                                                       |
-| `rsync_switches`     | rsync command switches                      | No       | `--verbose --archive --compress --recursive --delete` |
-| `rsync_add_switches` | Additional rsync command switches           | No       |                                                       |
+| Input                | Description                                                                                 | Required | Default                                               |
+| -------------------- | ------------------------------------------------------------------------------------------- | -------- | ----------------------------------------------------- |
+| `remote_host`        | Host for deployment                                                                         | Yes      |                                                       |
+| `remote_user`        | User for deployment                                                                         | Yes      |                                                       |
+| `remote_key`         | Private key for deployment                                                                  | Yes      |                                                       |
+| `remote_path`        | Directory to deploy to on the remote server. The path will be created if it does not exist. | Yes      |                                                       |
+| `path`               | Local source directory to deploy                                                            | Yes      |                                                       |
+| `rsync_switches`     | rsync command switches                                                                      | No       | `--verbose --archive --compress --recursive --delete` |
+| `rsync_add_switches` | Additional rsync command switches                                                           | No       |                                                       |
 
 ## Usage
 
@@ -58,20 +58,20 @@ jobs:
           path: "_build/"
 ```
 
-### Example 2: Deploy to custom directory
+### Deploy to directory including `owner/repo`
 
 ```yaml
-- name: Deploy to pages
+- name: Deploy to server
   uses: jonasehrlich/deploy-rsync-action@v1
   with:
     remote_host: ${{ secrets.DEPLOY_HOST }}
     remote_user: ${{ secrets.DEPLOY_USER }}
     remote_key: ${{ secrets.DEPLOY_KEY }}
-    remote_path: "/var/www/html/sites/myproject"
+    remote_path: "${{ secrets.DEPLOY_ROOT }}/${{ github.repository }}$"
     path: "_build/"
 ```
 
-### Example 3: Deploy with custom rsync options
+### Deploy with custom rsync options
 
 ```yaml
 - name: Deploy with custom rsync options
@@ -85,16 +85,6 @@ jobs:
     rsync_switches: "--verbose --archive --compress --recursive --delete --exclude=*.log --exclude=.env"
 ```
 
-## Path Configuration
-
-The action requires you to specify the complete remote path where files will be deployed:
-
-```yaml
-remote_path: "/var/www/html/my-site"
-```
-
-The specified directory will be created on the remote server if it doesn't exist.
-
 ## Required Secrets
 
 Set up the following secrets in your repository:
@@ -103,12 +93,7 @@ Set up the following secrets in your repository:
 - `DEPLOY_USER`: SSH username for authentication
 - `DEPLOY_KEY`: SSH private key for authentication
 
-## Security Considerations
-
-- Store SSH private keys as repository secrets
-- Use dedicated deployment keys with minimal required permissions
-- Consider using SSH key passphrases for additional security
-- Regularly rotate deployment keys
+It is also recommended to store the remote path (or its root) as a secret.
 
 ## License
 
